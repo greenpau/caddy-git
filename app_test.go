@@ -25,7 +25,7 @@ import (
 
 var (
 	scheme     string = "https"
-	host       string = "127.0.0.1"
+	host       string = "localhost"
 	securePort string = "3443"
 )
 
