@@ -1,8 +1,8 @@
 {
 	debug
-	http_port 3080
-	https_port 3443
 	local_certs
+	http_port 8080
+	https_port 8443
 
 	git {
 		repo authp.github.io {

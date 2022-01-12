@@ -25,8 +25,8 @@ import (
 
 var (
 	scheme     string = "https"
-	host       string = "localhost"
-	securePort string = "3443"
+	host       string = "127.0.0.1"
+	securePort string = "8443"
 )
 
 func initCaddyTester(t *testing.T, configFile string) (*caddytest.Tester, map[string]string, error) {

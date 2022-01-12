@@ -44,7 +44,6 @@ repo. The request to `authp.myfiosgateway.com/update/authp.github.io` trigger
       url https://github.com/authp/authp.github.io.git
       branch gh-pages
       depth 1
-      update every 600 # 10 minutes
     }
   }
 }
@@ -59,4 +58,11 @@ authp.myfiosgateway.com {
     }
   }
 }
+```
+
+The cloning of the repository happens on startup. Additionally, the cloning
+happens when `/update/authp.github.io` is being hit.
+
+```
+curl https://authp.myfiosgateway.com/update/authp.github.io
 ```

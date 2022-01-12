@@ -61,6 +61,11 @@ func (m *Endpoint) Validate() error {
 
 // ServeHTTP serves git management requests.
 func (m *Endpoint) ServeHTTP(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+	m.logger.Debug(
+		"received update git repo request",
+		zap.String("repo_name", m.RepositoryName),
+	)
+
 	statusCode := 200
 	resp := make(map[string]interface{})
 	repo, exists := manager.repos[m.RepositoryName]
