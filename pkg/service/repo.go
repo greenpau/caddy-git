@@ -20,6 +20,7 @@ import (
 	"go.uber.org/zap"
 	"os"
 	"path"
+	"path/filepath"
 	"sync"
 	"time"
 )
@@ -75,7 +76,56 @@ func (r *Repository) update() error {
 		}
 		return nil
 	}
+
 	// Pull the repository.
+	repoDir, err = filepath.Abs(repoDir)
+	if err != nil {
+		return err
+	}
+	repo, err := git.PlainOpen(repoDir)
+	if err != nil {
+		return err
+	}
+	// w, err := repo.Worktree()
+	_, err = repo.Worktree()
+	if err != nil {
+		return err
+	}
+
+	/*
+		opts := &git.PullOptions{
+			RemoteName:   "origin",
+			SingleBranch: true,
+		}
+		if r.Config.Branch != "" {
+			opts.ReferenceName = plumbing.NewBranchReferenceName(r.Config.Branch)
+		}
+
+		if r.Config.Depth > 0 {
+			opts.Depth = r.Config.Depth
+		}
+
+		if err := w.Pull(opts); err != nil {
+			if err == git.NoErrAlreadyUpToDate {
+				return nil
+			}
+			return err
+		}
+		ref, err := repo.Head()
+		if err != nil {
+			return err
+		}
+		commit, err := repo.CommitObject(ref.Hash())
+		if err != nil {
+			return err
+		}
+
+		r.logger.Debug(
+			"pulled latest commit",
+			zap.String("repo_name", r.Config.Name),
+			zap.Any("commit", commit.Hash),
+		)
+	*/
 
 	return nil
 }
