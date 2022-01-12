@@ -1,0 +1,29 @@
+{
+	debug
+	http_port 3080
+	https_port 3443
+	local_certs
+
+	git {
+		repo authp.github.io {
+			base_dir /tmp
+			url https://github.com/authp/authp.github.io.git
+			branch gh-pages
+			depth 1
+		}
+	}
+}
+
+127.0.0.1, localhost {
+	route /version* {
+		respond * "1.0.0" 200
+	}
+	route /update/authp.github.io {
+		git update repo authp.github.io
+	}
+	route {
+		file_server {
+			root /tmp/authp.github.io
+		}
+	}
+}

@@ -7,6 +7,8 @@
 
 Git Plugin for [Caddy v2](https://github.com/caddyserver/caddy).
 
+Inspired by [this comment](https://github.com/vrongmeal/caddygit/pull/5#issuecomment-1010440830).
+
 Please ask questions either here or via LinkedIn. I am happy to help you! @greenpau
 
 Please see other plugins:
@@ -38,19 +40,18 @@ repo. The request to `authp.myfiosgateway.com/update/authp.github.io` trigger
 {
   git {
     repo authp.github.io {
-      base path /tmp
+      base_dir /tmp
       url https://github.com/authp/authp.github.io.git
       branch gh-pages
-      access token FOOBAR
-      single branch
       depth 1
+      update every 600 # 10 minutes
     }
   }
 }
 
 authp.myfiosgateway.com {
   route /update/authp.github.io {
-    git update repo authp.github.io every 5 minutes
+    git update repo authp.github.io
   }
   route {
     file_server {
