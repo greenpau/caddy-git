@@ -25,6 +25,14 @@ type Config struct {
 	repoMap      map[string]*RepositoryConfig
 }
 
+// AuthConfig is authentication configuration in RepositoryConfig.
+type AuthConfig struct {
+	Username      string `json:"username,omitempty"`
+	Password      string `json:"password,omitempty"`
+	KeyPath       string `json:"key_path,omitempty"`
+	KeyPassphrase string `json:"key_passphrase,omitempty"`
+}
+
 // RepositoryConfig is a configuration of Repository.
 type RepositoryConfig struct {
 	// The alias for the Repository.
@@ -32,9 +40,10 @@ type RepositoryConfig struct {
 	// The address of the Repository.
 	Address string `json:"address,omitempty"`
 	// The directory where the Repository is being stored locally.
-	BaseDir string `json:"base_dir,omitempty"`
-	Branch  string `json:"branch,omitempty"`
-	Depth   int    `json:"depth,omitempty"`
+	BaseDir string      `json:"base_dir,omitempty"`
+	Branch  string      `json:"branch,omitempty"`
+	Depth   int         `json:"depth,omitempty"`
+	Auth    *AuthConfig `json:"auth,omitempty"`
 }
 
 // NewConfig returns an instance of Config.
@@ -75,7 +84,7 @@ func (rc *RepositoryConfig) validate() error {
 		return errors.ErrRepositoryConfigAddressEmpty
 	}
 	switch {
-	case strings.HasPrefix(rc.Address, "http"):
+	case strings.HasSuffix(rc.Address, ".git"):
 	default:
 		return errors.ErrRepositoryConfigAddressUnsupported.WithArgs(rc.Address)
 	}

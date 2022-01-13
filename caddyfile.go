@@ -39,7 +39,9 @@ func init() {
 // git {
 //   repo <name> {
 //     base_dir <path>
-//     [url|ssh] <path>
+//     url <path>
+//     auth key <path> [passcode <passcode>
+//     auth username <username> password <password>
 //     branch <name>
 //     depth 1
 //     update every <seconds>
@@ -56,7 +58,7 @@ func init() {
 var argRules = map[string]argRule{
 	"base_dir": argRule{Min: 1, Max: 1},
 	"url":      argRule{Min: 1, Max: 1},
-	"ssh":      argRule{Min: 1, Max: 1},
+	"auth":     argRule{Min: 2, Max: 5},
 	"branch":   argRule{Min: 1, Max: 1},
 	"depth":    argRule{Min: 1, Max: 1},
 	"update":   argRule{Min: 1, Max: 255},
@@ -97,8 +99,27 @@ func parseCaddyfileAppConfig(d *caddyfile.Dispenser, _ interface{}) (interface{}
 					rc.BaseDir = v[0]
 				case "url":
 					rc.Address = v[0]
-				case "ssh":
-					rc.Address = v[0]
+				case "auth":
+					authCfg := &service.AuthConfig{}
+					switch v[0] {
+					case "key":
+						switch len(v) {
+						case 2:
+							authCfg.KeyPath = v[1]
+						case 4:
+							authCfg.KeyPath = v[1]
+							authCfg.KeyPassphrase = v[3]
+						default:
+							return nil, d.Errf("malformed %q directive", k)
+						}
+					case "username":
+						if len(v) != 4 {
+							return nil, d.Errf("malformed %q directive", k)
+						}
+						authCfg.Username = v[1]
+						authCfg.Password = v[3]
+					}
+					rc.Auth = authCfg
 				case "branch":
 					rc.Branch = v[0]
 				case "depth":

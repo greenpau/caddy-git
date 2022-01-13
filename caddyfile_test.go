@@ -60,6 +60,95 @@ func TestParseCaddyfileAppConfig(t *testing.T) {
 			}`,
 		},
 		{
+			name: "test parse ssh config with key-based auth",
+			d: caddyfile.NewTestDispenser(`
+            git {
+              repo authp.github.io {
+                base_dir /tmp
+                url git@github.com:authp/authp.github.io.git
+				auth key ~/.ssh/id_rsa
+                branch gh-pages
+                depth 1
+              }
+            }`),
+			want: `{
+              "config": {
+                "repositories": [
+                  {
+                    "address":  "git@github.com:authp/authp.github.io.git",
+                    "base_dir": "/tmp",
+                    "branch":   "gh-pages",
+                    "depth":    1,
+                    "name":     "authp.github.io",
+					"auth": {
+					  "key_path": "~/.ssh/id_rsa"
+					}
+                  }
+                ]
+              }
+            }`,
+		},
+		{
+			name: "test parse ssh config with key-based auth and key passphrase",
+			d: caddyfile.NewTestDispenser(`
+            git {
+              repo authp.github.io {
+                base_dir /tmp
+                url git@github.com:authp/authp.github.io.git
+                auth key ~/.ssh/id_rsa passphrase foobar
+                branch gh-pages
+                depth 1
+              }
+            }`),
+			want: `{
+              "config": {
+                "repositories": [
+                  {
+                    "address":  "git@github.com:authp/authp.github.io.git",
+                    "base_dir": "/tmp",
+                    "branch":   "gh-pages",
+                    "depth":    1,
+                    "name":     "authp.github.io",
+                    "auth": {
+                      "key_path": "~/.ssh/id_rsa",
+                      "key_passphrase": "foobar"
+                    }
+                  }
+                ]
+              }
+            }`,
+		},
+		{
+			name: "test parse ssh config with username password auth",
+			d: caddyfile.NewTestDispenser(`
+            git {
+              repo authp.github.io {
+                base_dir /tmp
+                url git@github.com:authp/authp.github.io.git
+                auth username foo password bar
+                branch gh-pages
+                depth 1
+              }
+            }`),
+			want: `{
+              "config": {
+                "repositories": [
+                  {
+                    "address":  "git@github.com:authp/authp.github.io.git",
+                    "base_dir": "/tmp",
+                    "branch":   "gh-pages",
+                    "depth":    1,
+                    "name":     "authp.github.io",
+					"auth": {
+					  "username": "foo",
+					  "password": "bar"
+					}
+                  }
+                ]
+              }
+            }`,
+		},
+		{
 			name: "test parse config with unsupported bar key",
 			d: caddyfile.NewTestDispenser(`
             git {

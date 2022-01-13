@@ -32,6 +32,10 @@ The `caddy-git` allows updating a directory backed by a git repo.
 
 ## Getting Started
 
+Configuration examples:
+* [Public repo over HTTPS](./assets/config/Caddyfile)
+* [Private or public repo over SSH with key-based authentication](./assets/config/ssh/Caddyfile)
+
 For example, the following configuration sets up a definition for `authp.github.io`
 repo. The request to `authp.myfiosgateway.com/update/authp.github.io` trigger
 `git pull` of the `authp.github.io` repository.
