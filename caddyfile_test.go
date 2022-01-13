@@ -60,6 +60,45 @@ func TestParseCaddyfileAppConfig(t *testing.T) {
 			}`,
 		},
 		{
+			name: "test parse config with webhooks",
+			d: caddyfile.NewTestDispenser(`
+            git {
+              repo authp.github.io {
+                base_dir /tmp
+                url https://github.com/authp/authp.github.io.git
+				webhook Github X-Hub-Signature-256 foobar
+				webhook Gitlab X-Gitlab-Token barbaz
+                branch gh-pages
+                depth 1
+              }
+            }`),
+			want: `{
+              "config": {
+                "repositories": [
+                  {
+                    "address":  "https://github.com/authp/authp.github.io.git",
+                    "base_dir": "/tmp",
+                    "branch":   "gh-pages",
+                    "depth":    1,
+                    "name":     "authp.github.io",
+					"webhooks": [
+					  {
+						"name": "Github",
+					    "header": "X-Hub-Signature-256",
+						"secret": "foobar"
+					  },
+					  {
+                        "name": "Gitlab",
+                        "header": "X-Gitlab-Token",
+                        "secret": "barbaz"
+                      }
+					]
+                  }
+                ]
+              }
+            }`,
+		},
+		{
 			name: "test parse ssh config with key-based auth",
 			d: caddyfile.NewTestDispenser(`
             git {
@@ -168,7 +207,7 @@ func TestParseCaddyfileAppConfig(t *testing.T) {
               }
             }`),
 			shouldErr: true,
-			err:       fmt.Errorf("%s:%d - Error during parsing: too few args for %q directive", tf, 4, "url"),
+			err:       fmt.Errorf("%s:%d - Error during parsing: too few args for %q directive (config: 0, min: 1)", tf, 4, "url"),
 		},
 	}
 	for _, tc := range testcases {

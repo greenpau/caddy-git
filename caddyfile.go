@@ -42,6 +42,7 @@ func init() {
 //     url <path>
 //     auth key <path> [passcode <passcode>
 //     auth username <username> password <password>
+//     webhook <name> <header> <secret>
 //     branch <name>
 //     depth 1
 //     update every <seconds>
@@ -62,6 +63,7 @@ var argRules = map[string]argRule{
 	"branch":   argRule{Min: 1, Max: 1},
 	"depth":    argRule{Min: 1, Max: 1},
 	"update":   argRule{Min: 1, Max: 255},
+	"webhook":  argRule{Min: 3, Max: 3},
 }
 
 type argRule struct {
@@ -120,6 +122,13 @@ func parseCaddyfileAppConfig(d *caddyfile.Dispenser, _ interface{}) (interface{}
 						authCfg.Password = v[3]
 					}
 					rc.Auth = authCfg
+				case "webhook":
+					whCfg := &service.WebhookConfig{
+						Name:   v[0],
+						Header: v[1],
+						Secret: v[2],
+					}
+					rc.Webhooks = append(rc.Webhooks, whCfg)
 				case "branch":
 					rc.Branch = v[0]
 				case "depth":
@@ -154,10 +163,10 @@ func validateArg(k string, v []string) error {
 		return nil
 	}
 	if r.Min > len(v) {
-		return fmt.Errorf("too few args for %q directive", k)
+		return fmt.Errorf("too few args for %q directive (config: %d, min: %d)", k, len(v), r.Min)
 	}
 	if r.Max < len(v) {
-		return fmt.Errorf("too many args for %q directive", k)
+		return fmt.Errorf("too many args for %q directive (config: %d, max: %d", k, len(v), r.Max)
 	}
 	return nil
 }

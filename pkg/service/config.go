@@ -33,6 +33,13 @@ type AuthConfig struct {
 	KeyPassphrase string `json:"key_passphrase,omitempty"`
 }
 
+// WebhookConfig is a webhook configuration in RepositoryConfig.
+type WebhookConfig struct {
+	Name   string `json:"name"`
+	Header string `json:"header"`
+	Secret string `json:"secret"`
+}
+
 // RepositoryConfig is a configuration of Repository.
 type RepositoryConfig struct {
 	// The alias for the Repository.
@@ -40,10 +47,11 @@ type RepositoryConfig struct {
 	// The address of the Repository.
 	Address string `json:"address,omitempty"`
 	// The directory where the Repository is being stored locally.
-	BaseDir string      `json:"base_dir,omitempty"`
-	Branch  string      `json:"branch,omitempty"`
-	Depth   int         `json:"depth,omitempty"`
-	Auth    *AuthConfig `json:"auth,omitempty"`
+	BaseDir  string           `json:"base_dir,omitempty"`
+	Branch   string           `json:"branch,omitempty"`
+	Depth    int              `json:"depth,omitempty"`
+	Auth     *AuthConfig      `json:"auth,omitempty"`
+	Webhooks []*WebhookConfig `json:"webhooks,omitempty"`
 }
 
 // NewConfig returns an instance of Config.
