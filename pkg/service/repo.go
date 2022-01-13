@@ -74,7 +74,7 @@ func (r *Repository) update() error {
 		if _, err := git.PlainClone(repoDir, false, opts); err != nil {
 			return err
 		}
-		return nil
+		// return nil
 	}
 
 	// Pull the repository.
@@ -86,47 +86,46 @@ func (r *Repository) update() error {
 	if err != nil {
 		return err
 	}
-	// w, err := repo.Worktree()
-	_, err = repo.Worktree()
+	w, err := repo.Worktree()
+	if err != nil {
+		return err
+	}
+	opts := &git.PullOptions{
+		RemoteName:   "origin",
+		SingleBranch: true,
+	}
+	if r.Config.Branch != "" {
+		opts.ReferenceName = plumbing.NewBranchReferenceName(r.Config.Branch)
+	}
+
+	if r.Config.Depth > 0 {
+		opts.Depth = r.Config.Depth
+	}
+
+	if err := w.Pull(opts); err != nil {
+		if err == git.NoErrAlreadyUpToDate {
+			r.logger.Debug(
+				"repo is already up to date",
+				zap.String("repo_name", r.Config.Name),
+			)
+			return nil
+		}
+		return err
+	}
+	ref, err := repo.Head()
+	if err != nil {
+		return err
+	}
+	commit, err := repo.CommitObject(ref.Hash())
 	if err != nil {
 		return err
 	}
 
-	/*
-		opts := &git.PullOptions{
-			RemoteName:   "origin",
-			SingleBranch: true,
-		}
-		if r.Config.Branch != "" {
-			opts.ReferenceName = plumbing.NewBranchReferenceName(r.Config.Branch)
-		}
-
-		if r.Config.Depth > 0 {
-			opts.Depth = r.Config.Depth
-		}
-
-		if err := w.Pull(opts); err != nil {
-			if err == git.NoErrAlreadyUpToDate {
-				return nil
-			}
-			return err
-		}
-		ref, err := repo.Head()
-		if err != nil {
-			return err
-		}
-		commit, err := repo.CommitObject(ref.Hash())
-		if err != nil {
-			return err
-		}
-
-		r.logger.Debug(
-			"pulled latest commit",
-			zap.String("repo_name", r.Config.Name),
-			zap.Any("commit", commit.Hash),
-		)
-	*/
-
+	r.logger.Debug(
+		"pulled latest commit",
+		zap.String("repo_name", r.Config.Name),
+		zap.Any("commit", commit.Hash.String()),
+	)
 	return nil
 }
 
