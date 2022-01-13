@@ -40,7 +40,7 @@ func init() {
 //   repo <name> {
 //     base_dir <path>
 //     url <path>
-//     auth key <path> [passcode <passcode>
+//     auth key <path> [passphrase <passphrase>] [no_strict_host_key_check]
 //     auth username <username> password <password>
 //     webhook <name> <header> <secret>
 //     branch <name>
@@ -61,7 +61,7 @@ const badRepl string = "ERROR_BAD_REPL"
 var argRules = map[string]argRule{
 	"base_dir": argRule{Min: 1, Max: 1},
 	"url":      argRule{Min: 1, Max: 1},
-	"auth":     argRule{Min: 2, Max: 5},
+	"auth":     argRule{Min: 2, Max: 255},
 	"branch":   argRule{Min: 1, Max: 1},
 	"depth":    argRule{Min: 1, Max: 1},
 	"update":   argRule{Min: 1, Max: 255},
@@ -109,21 +109,26 @@ func parseCaddyfileAppConfig(d *caddyfile.Dispenser, _ interface{}) (interface{}
 					authCfg := &service.AuthConfig{}
 					switch v[0] {
 					case "key":
-						switch len(v) {
-						case 2:
-							authCfg.KeyPath = v[1]
-						case 4:
-							authCfg.KeyPath = v[1]
-							authCfg.KeyPassphrase = v[3]
-						default:
-							return nil, d.Errf("malformed %q directive", k)
+						if len(v) < 2 {
+							return nil, d.Errf("malformed %q directive: %v", k, v)
+						}
+						authCfg.KeyPath = v[1]
+						if len(v) > 2 {
+							if v[2] == "passphrase" {
+								authCfg.KeyPassphrase = v[3]
+							}
 						}
 					case "username":
-						if len(v) != 4 {
+						if len(v) < 4 {
 							return nil, d.Errf("malformed %q directive", k)
 						}
 						authCfg.Username = v[1]
-						authCfg.Password = v[3]
+						if v[2] == "password" {
+							authCfg.Password = v[3]
+						}
+					}
+					if findString(v, "no_strict_host_key_check") {
+						authCfg.StrictHostKeyCheckingDisabled = true
 					}
 					rc.Auth = authCfg
 				case "webhook":
@@ -239,4 +244,13 @@ func findReplace(repl *caddy.Replacer, arr []string) (output []string) {
 		output = append(output, repl.ReplaceAll(item, badRepl))
 	}
 	return output
+}
+
+func findString(arr []string, s string) bool {
+	for _, x := range arr {
+		if x == s {
+			return true
+		}
+	}
+	return false
 }

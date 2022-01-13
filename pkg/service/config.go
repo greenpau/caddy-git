@@ -27,10 +27,11 @@ type Config struct {
 
 // AuthConfig is authentication configuration in RepositoryConfig.
 type AuthConfig struct {
-	Username      string `json:"username,omitempty"`
-	Password      string `json:"password,omitempty"`
-	KeyPath       string `json:"key_path,omitempty"`
-	KeyPassphrase string `json:"key_passphrase,omitempty"`
+	Username                      string `json:"username,omitempty"`
+	Password                      string `json:"password,omitempty"`
+	KeyPath                       string `json:"key_path,omitempty"`
+	KeyPassphrase                 string `json:"key_passphrase,omitempty"`
+	StrictHostKeyCheckingDisabled bool   `json:"strict_host_key_checking_disabled,omitempty"`
 }
 
 // WebhookConfig is a webhook configuration in RepositoryConfig.
@@ -60,6 +61,7 @@ type RepositoryConfig struct {
 	Auth         *AuthConfig      `json:"auth,omitempty"`
 	Webhooks     []*WebhookConfig `json:"webhooks,omitempty"`
 	PostPullExec []*ExecConfig    `json:"post_pull_exec,omitempty"`
+	transport    string           `json:"transport,omitempty"`
 }
 
 // NewConfig returns an instance of Config.
@@ -99,10 +101,15 @@ func (rc *RepositoryConfig) validate() error {
 	if rc.Address == "" {
 		return errors.ErrRepositoryConfigAddressEmpty
 	}
-	switch {
-	case strings.HasSuffix(rc.Address, ".git"):
-	default:
+	if !strings.HasSuffix(rc.Address, ".git") {
 		return errors.ErrRepositoryConfigAddressUnsupported.WithArgs(rc.Address)
+	}
+
+	switch {
+	case strings.HasPrefix(rc.Address, "https://"), strings.HasPrefix(rc.Address, "http://"):
+		rc.transport = "http"
+	default:
+		rc.transport = "ssh"
 	}
 	return nil
 }

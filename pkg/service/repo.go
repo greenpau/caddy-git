@@ -17,10 +17,15 @@ package service
 import (
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing"
+	"github.com/go-git/go-git/v5/plumbing/transport"
+	"github.com/go-git/go-git/v5/plumbing/transport/http"
+	"github.com/go-git/go-git/v5/plumbing/transport/ssh"
 	"go.uber.org/zap"
+	cryptossh "golang.org/x/crypto/ssh"
 	"os"
 	"path"
 	"path/filepath"
+	"strings"
 	"sync"
 	"time"
 )
@@ -45,6 +50,8 @@ func (r *Repository) update() error {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
+	r.Config.BaseDir = expandDir(r.Config.BaseDir)
+
 	baseDirExists, err := dirExists(r.Config.BaseDir)
 	if err != nil {
 		return err
@@ -62,19 +69,13 @@ func (r *Repository) update() error {
 	}
 	if !repoDirExists {
 		// Clone the repository.
-		opts := &git.CloneOptions{
-			URL: r.Config.Address,
-		}
-		if r.Config.Depth > 0 {
-			opts.Depth = r.Config.Depth
-		}
-		if r.Config.Branch != "" {
-			opts.ReferenceName = plumbing.NewBranchReferenceName(r.Config.Branch)
+		opts := &git.CloneOptions{}
+		if err := configureCloneOptions(r.Config, opts); err != nil {
+			return err
 		}
 		if _, err := git.PlainClone(repoDir, false, opts); err != nil {
 			return err
 		}
-		// return nil
 	}
 
 	// Pull the repository.
@@ -90,18 +91,11 @@ func (r *Repository) update() error {
 	if err != nil {
 		return err
 	}
-	opts := &git.PullOptions{
-		RemoteName:   "origin",
-		SingleBranch: true,
-	}
-	if r.Config.Branch != "" {
-		opts.ReferenceName = plumbing.NewBranchReferenceName(r.Config.Branch)
-	}
 
-	if r.Config.Depth > 0 {
-		opts.Depth = r.Config.Depth
+	opts := &git.PullOptions{}
+	if err := configurePullOptions(r.Config, opts); err != nil {
+		return err
 	}
-
 	if err := w.Pull(opts); err != nil {
 		if err == git.NoErrAlreadyUpToDate {
 			r.logger.Debug(
@@ -139,4 +133,108 @@ func dirExists(s string) (bool, error) {
 	}
 	return true, err
 
+}
+
+func configureCloneOptions(cfg *RepositoryConfig, opts *git.CloneOptions) error {
+	opts.URL = cfg.Address
+	trAuthMethod, err := configureAuthOptions(cfg)
+	if err != nil {
+		return err
+	}
+	opts.Auth = trAuthMethod
+	if cfg.Depth > 0 {
+		opts.Depth = cfg.Depth
+	}
+	if cfg.Branch != "" {
+		opts.ReferenceName = plumbing.NewBranchReferenceName(cfg.Branch)
+	}
+	return nil
+}
+
+func configurePullOptions(cfg *RepositoryConfig, opts *git.PullOptions) error {
+	opts.RemoteName = "origin"
+	trAuthMethod, err := configureAuthOptions(cfg)
+	if err != nil {
+		return err
+	}
+	opts.Auth = trAuthMethod
+	if cfg.Depth > 0 {
+		opts.Depth = cfg.Depth
+	}
+	if cfg.Branch != "" {
+		opts.ReferenceName = plumbing.NewBranchReferenceName(cfg.Branch)
+		opts.SingleBranch = true
+	}
+	return nil
+}
+
+func configureAuthOptions(cfg *RepositoryConfig) (transport.AuthMethod, error) {
+	if cfg.Auth == nil {
+		return nil, nil
+	}
+	cfg.Auth.KeyPath = expandDir(cfg.Auth.KeyPath)
+
+	switch cfg.transport {
+	case "http":
+		// Configure authentication for HTTP/S.
+		switch {
+		case cfg.Auth.Username != "":
+			return &http.BasicAuth{
+				Username: cfg.Auth.Username,
+				Password: cfg.Auth.Password,
+			}, nil
+		}
+	case "ssh":
+		// Configure authentication for SSH.
+		switch {
+		case cfg.Auth.KeyPath != "":
+			var publicKeysUser string
+			switch {
+			case strings.Contains(cfg.Address, "@"):
+				cfgAddressArr := strings.SplitN(cfg.Address, "@", 2)
+				publicKeysUser = cfgAddressArr[0]
+			case cfg.Auth.Username != "":
+				publicKeysUser = cfg.Auth.Username
+			}
+
+			if publicKeysUser == "" {
+				publicKeysUser = "git"
+			}
+
+			publicKeys, err := ssh.NewPublicKeysFromFile(publicKeysUser, cfg.Auth.KeyPath, cfg.Auth.KeyPassphrase)
+			if err != nil {
+				return nil, err
+			}
+			if cfg.Auth.StrictHostKeyCheckingDisabled {
+				publicKeys.HostKeyCallbackHelper = ssh.HostKeyCallbackHelper{
+					HostKeyCallback: cryptossh.InsecureIgnoreHostKey(),
+				}
+			}
+			return publicKeys, nil
+		case cfg.Auth.Username != "":
+			password := &ssh.Password{
+				User:     cfg.Auth.Username,
+				Password: cfg.Auth.Password,
+			}
+			if cfg.Auth.StrictHostKeyCheckingDisabled {
+				password.HostKeyCallbackHelper = ssh.HostKeyCallbackHelper{
+					HostKeyCallback: cryptossh.InsecureIgnoreHostKey(),
+				}
+			}
+			return password, nil
+		}
+	}
+	return nil, nil
+}
+
+func expandDir(s string) string {
+	if s == "" || !strings.HasPrefix(s, "~") {
+		return s
+	}
+	hd, err := os.UserHomeDir()
+	if err != nil {
+		return s
+	}
+	output := hd + s[1:]
+	return output
 }
