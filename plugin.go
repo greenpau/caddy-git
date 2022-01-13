@@ -30,7 +30,7 @@ func init() {
 
 // Middleware implements git repository manager.
 type Middleware struct {
-	Endpoint *service.Endpoint `json:"authp,omitempty"`
+	Endpoint *service.Endpoint `json:"endpoint,omitempty"`
 }
 
 // CaddyModule returns the Caddy module information.

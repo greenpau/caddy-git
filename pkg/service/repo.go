@@ -15,6 +15,8 @@
 package service
 
 import (
+	"bytes"
+	"fmt"
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing"
 	"github.com/go-git/go-git/v5/plumbing/transport"
@@ -23,6 +25,7 @@ import (
 	"go.uber.org/zap"
 	cryptossh "golang.org/x/crypto/ssh"
 	"os"
+	"os/exec"
 	"path"
 	"path/filepath"
 	"strings"
@@ -50,6 +53,45 @@ func (r *Repository) update() error {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
+	err := r.runUpdate()
+	if err != nil {
+		return err
+	}
+
+	if len(r.Config.PostPullExec) > 0 {
+		r.runPostPullExec()
+	}
+
+	return nil
+}
+
+func (r *Repository) runPostPullExec() {
+	for _, entry := range r.Config.PostPullExec {
+		var stdout, stderr bytes.Buffer
+		switch {
+		case entry.Command != "":
+			cmd := exec.Command(entry.Command, entry.Args...)
+			cmd.Stdout = &stdout
+			cmd.Stderr = &stderr
+			if err := cmd.Run(); err != nil {
+				r.logger.Warn(
+					"failed executing post-pull command",
+					zap.String("repo_name", r.Config.Name),
+					zap.String("error", fmt.Sprintf("%v", cmd.Stderr)),
+				)
+				continue
+			}
+			r.logger.Debug(
+				"executed post-pull command",
+				zap.String("repo_name", r.Config.Name),
+				zap.String("stdout", fmt.Sprintf("%v", cmd.Stdout)),
+				zap.String("stderr", fmt.Sprintf("%v", cmd.Stderr)),
+			)
+		}
+	}
+}
+
+func (r *Repository) runUpdate() error {
 	r.Config.BaseDir = expandDir(r.Config.BaseDir)
 
 	baseDirExists, err := dirExists(r.Config.BaseDir)
