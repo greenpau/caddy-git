@@ -21,7 +21,7 @@ Paste configuration here ...
 
 **Version Information**
 
-Provide output of `caddy list-modules -versions | grep auth` below:
+Provide output of `caddy list-modules -versions | grep git` below:
 
 ```
 Paste output here ...
