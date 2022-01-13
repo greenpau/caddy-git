@@ -10,3 +10,15 @@ assignees: 'greenpau'
 > A clear and concise description of what you want the system to do.
 
 CHANGE_ME
+
+> What are the Caddyfile directives that need to be added.
+
+Add Caddyfile directive:
+
+```
+git {
+  repo foo {
+    <directive> <args>
+  }
+}
+```
