@@ -66,21 +66,63 @@ func (m *Endpoint) ServeHTTP(ctx context.Context, w http.ResponseWriter, r *http
 		zap.String("repo_name", m.RepositoryName),
 	)
 
-	statusCode := 200
 	resp := make(map[string]interface{})
 	repo, exists := manager.repos[m.RepositoryName]
 	if !exists {
-		statusCode = 500
+		resp["status_code"] = http.StatusInternalServerError
 		m.logger.Warn("repo not found", zap.String("repo_name", m.RepositoryName))
-	} else {
-		if err := repo.update(); err != nil {
-			m.logger.Warn("failed updating repo", zap.String("repo_name", repo.Config.Name), zap.Error(err))
-			statusCode = 500
+		return m.respondHTTP(ctx, w, r, resp)
+	}
+
+	if len(repo.Config.Webhooks) > 0 {
+		// Inspect HTTP headers for webhooks.
+		var authorized bool
+		for _, webhook := range repo.Config.Webhooks {
+			hdr := r.Header.Get(webhook.Header)
+			if hdr == "" {
+				continue
+			}
+			if hdr != webhook.Secret {
+				resp["status_code"] = http.StatusUnauthorized
+				m.logger.Warn(
+					"webhook authentication failed",
+					zap.String("repo_name", repo.Config.Name),
+					zap.String("webhook_header", webhook.Header),
+					zap.String("error", "auth header value mismatch"),
+				)
+				return m.respondHTTP(ctx, w, r, resp)
+			}
+			authorized = true
+		}
+
+		if !authorized {
+			resp["status_code"] = http.StatusUnauthorized
+			m.logger.Warn(
+				"webhook authentication failed",
+				zap.String("repo_name", repo.Config.Name),
+				zap.String("error", "auth header not found"),
+			)
+			return m.respondHTTP(ctx, w, r, resp)
 		}
 	}
-	resp["status_code"] = statusCode
-	respBytes, _ := json.Marshal(resp)
-	w.WriteHeader(200)
-	w.Write(respBytes)
+
+	if err := repo.update(); err != nil {
+		m.logger.Warn("failed updating repo", zap.String("repo_name", repo.Config.Name), zap.Error(err))
+		resp["status_code"] = http.StatusInternalServerError
+		return m.respondHTTP(ctx, w, r, resp)
+	}
+
+	resp["status_code"] = http.StatusOK
+	return m.respondHTTP(ctx, w, r, resp)
+}
+
+func (m *Endpoint) respondHTTP(ctx context.Context, w http.ResponseWriter, r *http.Request, data map[string]interface{}) error {
+	b, _ := json.Marshal(data)
+	if code, exists := data["status_code"]; exists {
+		w.WriteHeader(code.(int))
+	} else {
+		w.WriteHeader(http.StatusInternalServerError)
+	}
+	w.Write(b)
 	return nil
 }

@@ -8,8 +8,8 @@
 		repo authp.github.io {
 			base_dir ./tmp
 			url https://github.com/authp/authp.github.io.git
-			webhook X-Hub-Signature-256 foobar
-			webhook X-Gitlab-Token barbaz
+			# webhook Github X-Hub-Signature-256 {env.MY_GITHUB_WEBHOOK_KEY}
+			webhook Gitlab X-Gitlab-Token barbaz
 			branch gh-pages
 			depth 1
 		}
