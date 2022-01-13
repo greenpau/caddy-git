@@ -8,7 +8,7 @@
 		repo authp.github.io {
 			base_dir ./tmp/ssh
 			url git@github.com:authp/authp.github.io.git
-            auth key ~/.ssh/id_rsa
+			auth key ~/.ssh/id_rsa
 			branch gh-pages
 			depth 1
 		}
