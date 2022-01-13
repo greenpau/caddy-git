@@ -36,6 +36,7 @@ Configuration examples:
 * [Public repo over HTTPS](./assets/config/Caddyfile)
 * [Private or public repo over SSH with key-based authentication](./assets/config/ssh/Caddyfile)
 * [Repo with Webhooks](./assets/config/webhook/Caddyfile)
+* [Repo with post pull execution scripts](./assets/config/post_cmd_exec/Caddyfile)
 
 For example, the following configuration sets up a definition for `authp.github.io`
 repo. The request to `authp.myfiosgateway.com/update/authp.github.io` trigger

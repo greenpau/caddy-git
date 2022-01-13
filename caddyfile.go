@@ -56,6 +56,8 @@ func init() {
 //   git update repo <name>
 // }
 
+const badRepl string = "ERROR_BAD_REPL"
+
 var argRules = map[string]argRule{
 	"base_dir": argRule{Min: 1, Max: 1},
 	"url":      argRule{Min: 1, Max: 1},
@@ -64,6 +66,7 @@ var argRules = map[string]argRule{
 	"depth":    argRule{Min: 1, Max: 1},
 	"update":   argRule{Min: 1, Max: 255},
 	"webhook":  argRule{Min: 3, Max: 3},
+	"post":     argRule{Min: 2, Max: 2},
 }
 
 type argRule struct {
@@ -72,6 +75,7 @@ type argRule struct {
 }
 
 func parseCaddyfileAppConfig(d *caddyfile.Dispenser, _ interface{}) (interface{}, error) {
+	repl := caddy.NewReplacer()
 	app := new(App)
 	app.Config = service.NewConfig()
 
@@ -90,7 +94,7 @@ func parseCaddyfileAppConfig(d *caddyfile.Dispenser, _ interface{}) (interface{}
 			rc.Name = args[0]
 			for nesting := d.Nesting(); d.NextBlock(nesting); {
 				k := d.Val()
-				v := d.RemainingArgs()
+				v := findReplace(repl, d.RemainingArgs())
 				if _, exists := argRules[k]; exists {
 					if err := validateArg(k, v); err != nil {
 						return nil, d.Errf("%s", err)
@@ -136,6 +140,28 @@ func parseCaddyfileAppConfig(d *caddyfile.Dispenser, _ interface{}) (interface{}
 						rc.Depth = n
 					} else {
 						return nil, d.Errf("%s value %q is not integer", k, v[0])
+					}
+				case "post":
+					switch {
+					case strings.Join(v, " ") == "pull exec":
+						ppeCfg := &service.ExecConfig{}
+						for nesting := d.Nesting(); d.NextBlock(nesting); {
+							nk := d.Val()
+							nargs := findReplace(repl, d.RemainingArgs())
+							switch nk {
+							case "name":
+								ppeCfg.Name = nargs[0]
+							case "command":
+								ppeCfg.Command = nargs[0]
+							case "args":
+								ppeCfg.Args = nargs
+							default:
+								return nil, d.Errf("malformed %q directive: %v", nk, nargs)
+							}
+						}
+						rc.PostPullExec = append(rc.PostPullExec, ppeCfg)
+					default:
+						return nil, d.Errf("malformed %q directive: %v", k, v)
 					}
 				case "update":
 					return nil, d.Errf("unsupported %q key", k)
@@ -206,4 +232,11 @@ func getRouteFromParseCaddyfileHandlerConfig(h httpcaddyfile.Helper) ([]httpcadd
 	subroute.Routes = append([]caddyhttp.Route{route}, subroute.Routes...)
 	return h.NewRoute(pathMatcher, subroute), nil
 
+}
+
+func findReplace(repl *caddy.Replacer, arr []string) (output []string) {
+	for _, item := range arr {
+		output = append(output, repl.ReplaceAll(item, badRepl))
+	}
+	return output
 }

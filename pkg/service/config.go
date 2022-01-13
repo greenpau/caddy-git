@@ -35,9 +35,16 @@ type AuthConfig struct {
 
 // WebhookConfig is a webhook configuration in RepositoryConfig.
 type WebhookConfig struct {
-	Name   string `json:"name"`
-	Header string `json:"header"`
-	Secret string `json:"secret"`
+	Name   string `json:"name,omitempty"`
+	Header string `json:"header,omitempty"`
+	Secret string `json:"secret,omitempty"`
+}
+
+// ExecConfig is an execution script configuration in RepositoryConfig.
+type ExecConfig struct {
+	Name    string   `json:"name,omitempty"`
+	Command string   `json:"command,omitempty"`
+	Args    []string `json:"args,omitempty"`
 }
 
 // RepositoryConfig is a configuration of Repository.
@@ -47,11 +54,12 @@ type RepositoryConfig struct {
 	// The address of the Repository.
 	Address string `json:"address,omitempty"`
 	// The directory where the Repository is being stored locally.
-	BaseDir  string           `json:"base_dir,omitempty"`
-	Branch   string           `json:"branch,omitempty"`
-	Depth    int              `json:"depth,omitempty"`
-	Auth     *AuthConfig      `json:"auth,omitempty"`
-	Webhooks []*WebhookConfig `json:"webhooks,omitempty"`
+	BaseDir      string           `json:"base_dir,omitempty"`
+	Branch       string           `json:"branch,omitempty"`
+	Depth        int              `json:"depth,omitempty"`
+	Auth         *AuthConfig      `json:"auth,omitempty"`
+	Webhooks     []*WebhookConfig `json:"webhooks,omitempty"`
+	PostPullExec []*ExecConfig    `json:"post_pull_exec,omitempty"`
 }
 
 // NewConfig returns an instance of Config.

@@ -35,7 +35,7 @@ func TestParseCaddyfileAppConfig(t *testing.T) {
 		err       error
 	}{
 		{
-			name: "test parse config",
+			name: "test parse repo config",
 			d: caddyfile.NewTestDispenser(`
             git {
               repo authp.github.io {
@@ -60,7 +60,7 @@ func TestParseCaddyfileAppConfig(t *testing.T) {
 			}`,
 		},
 		{
-			name: "test parse config with webhooks",
+			name: "test parse repo config with webhooks",
 			d: caddyfile.NewTestDispenser(`
             git {
               repo authp.github.io {
@@ -92,6 +92,43 @@ func TestParseCaddyfileAppConfig(t *testing.T) {
                         "header": "X-Gitlab-Token",
                         "secret": "barbaz"
                       }
+					]
+                  }
+                ]
+              }
+            }`,
+		},
+		{
+			name: "test parse repo config with post pull cmd",
+			d: caddyfile.NewTestDispenser(`
+            git {
+              repo authp.github.io {
+                base_dir /tmp
+                url https://github.com/authp/authp.github.io.git
+                branch gh-pages
+                depth 1
+                post pull exec {
+				  name Pager
+                  command /usr/local/bin/pager
+				  args "pulled authp.github.io repo"
+                }
+              }
+            }`),
+			want: `{
+              "config": {
+                "repositories": [
+                  {
+                    "address":  "https://github.com/authp/authp.github.io.git",
+                    "base_dir": "/tmp",
+                    "branch":   "gh-pages",
+                    "depth":    1,
+                    "name":     "authp.github.io",
+					"post_pull_exec": [
+					  {
+					    "name": "Pager",
+					    "command": "/usr/local/bin/pager",
+						"args": ["pulled authp.github.io repo"]
+					  }
 					]
                   }
                 ]

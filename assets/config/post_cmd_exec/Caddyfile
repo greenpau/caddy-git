@@ -1,0 +1,34 @@
+{
+	debug
+	local_certs
+	http_port 8080
+	https_port 8443
+
+	git {
+		repo authp.github.io {
+			base_dir ./tmp
+			url https://github.com/authp/authp.github.io.git
+			branch gh-pages
+			depth 1
+			post pull exec {
+				name Pager
+				command /usr/local/bin/pager
+				args "pulled authp.github.io repo"
+			}
+		}
+	}
+}
+
+127.0.0.1, localhost {
+	route /version* {
+		respond * "1.0.0" 200
+	}
+	route /update/authp.github.io {
+		git update repo authp.github.io
+	}
+	route {
+		file_server {
+			root ./tmp/authp.github.io
+		}
+	}
+}
