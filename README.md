@@ -12,10 +12,9 @@ Inspired by [this comment](https://github.com/vrongmeal/caddygit/pull/5#issuecom
 Please ask questions either here or via LinkedIn. I am happy to help you! @greenpau
 
 Please see other plugins:
-* [caddy-auth-portal](https://github.com/greenpau/caddy-auth-portal)
-* [caddy-authorize](https://github.com/greenpau/caddy-authorize)
-* [caddy-trace](https://github.com/greenpau/caddy-trace)
+* [caddy-security](https://github.com/greenpau/caddy-security)
 * [caddy-systemd](https://github.com/greenpau/caddy-systemd)
+* [caddy-trace](https://github.com/greenpau/caddy-trace)
 
 
 <!-- begin-markdown-toc -->
