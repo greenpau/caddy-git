@@ -42,7 +42,6 @@ func TestParseCaddyfileAppConfig(t *testing.T) {
                 base_dir /tmp
                 url https://github.com/authp/authp.github.io.git
                 branch gh-pages
-                depth 1
               }
             }`),
 			want: `{
@@ -52,7 +51,6 @@ func TestParseCaddyfileAppConfig(t *testing.T) {
                     "address":  "https://github.com/authp/authp.github.io.git",
                     "base_dir": "/tmp",
                     "branch":   "gh-pages",
-                    "depth":    1,
                     "name":     "authp.github.io"
                   }
                 ]
@@ -69,7 +67,6 @@ func TestParseCaddyfileAppConfig(t *testing.T) {
 				webhook Github X-Hub-Signature-256 foobar
 				webhook Gitlab X-Gitlab-Token barbaz
                 branch gh-pages
-                depth 1
               }
             }`),
 			want: `{
@@ -79,7 +76,6 @@ func TestParseCaddyfileAppConfig(t *testing.T) {
                     "address":  "https://github.com/authp/authp.github.io.git",
                     "base_dir": "/tmp",
                     "branch":   "gh-pages",
-                    "depth":    1,
                     "name":     "authp.github.io",
 					"webhooks": [
 					  {
@@ -106,7 +102,6 @@ func TestParseCaddyfileAppConfig(t *testing.T) {
                 base_dir /tmp
                 url https://github.com/authp/authp.github.io.git
                 branch gh-pages
-                depth 1
                 post pull exec {
 				  name Pager
                   command /usr/local/bin/pager
@@ -121,7 +116,6 @@ func TestParseCaddyfileAppConfig(t *testing.T) {
                     "address":  "https://github.com/authp/authp.github.io.git",
                     "base_dir": "/tmp",
                     "branch":   "gh-pages",
-                    "depth":    1,
                     "name":     "authp.github.io",
 					"post_pull_exec": [
 					  {
@@ -144,7 +138,6 @@ func TestParseCaddyfileAppConfig(t *testing.T) {
                 url git@github.com:authp/authp.github.io.git
 				auth key ~/.ssh/id_rsa
                 branch gh-pages
-                depth 1
               }
             }`),
 			want: `{
@@ -154,7 +147,6 @@ func TestParseCaddyfileAppConfig(t *testing.T) {
                     "address":  "git@github.com:authp/authp.github.io.git",
                     "base_dir": "/tmp",
                     "branch":   "gh-pages",
-                    "depth":    1,
                     "name":     "authp.github.io",
 					"auth": {
 					  "key_path": "~/.ssh/id_rsa"
@@ -173,7 +165,6 @@ func TestParseCaddyfileAppConfig(t *testing.T) {
                 url git@github.com:authp/authp.github.io.git
                 auth key ~/.ssh/id_rsa passphrase foobar
                 branch gh-pages
-                depth 1
               }
             }`),
 			want: `{
@@ -183,7 +174,6 @@ func TestParseCaddyfileAppConfig(t *testing.T) {
                     "address":  "git@github.com:authp/authp.github.io.git",
                     "base_dir": "/tmp",
                     "branch":   "gh-pages",
-                    "depth":    1,
                     "name":     "authp.github.io",
                     "auth": {
                       "key_path": "~/.ssh/id_rsa",
@@ -203,7 +193,6 @@ func TestParseCaddyfileAppConfig(t *testing.T) {
                 url git@github.com:authp/authp.github.io.git
                 auth username foo password bar
                 branch gh-pages
-                depth 1
               }
             }`),
 			want: `{
@@ -213,7 +202,6 @@ func TestParseCaddyfileAppConfig(t *testing.T) {
                     "address":  "git@github.com:authp/authp.github.io.git",
                     "base_dir": "/tmp",
                     "branch":   "gh-pages",
-                    "depth":    1,
                     "name":     "authp.github.io",
 					"auth": {
 					  "username": "foo",

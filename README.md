@@ -49,7 +49,6 @@ repo. The request to `authp.myfiosgateway.com/update/authp.github.io` trigger
       base_dir /tmp
       url https://github.com/authp/authp.github.io.git
       branch gh-pages
-      depth 1
     }
   }
 }

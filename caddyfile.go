@@ -146,6 +146,7 @@ func parseCaddyfileAppConfig(d *caddyfile.Dispenser, _ interface{}) (interface{}
 					} else {
 						return nil, d.Errf("%s value %q is not integer", k, v[0])
 					}
+					// return nil, d.Errf("the depth directive is disabled due to the issue with github.com/go-git/go-git")
 				case "post":
 					switch {
 					case strings.Join(v, " ") == "pull exec":

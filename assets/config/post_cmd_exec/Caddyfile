@@ -9,7 +9,6 @@
 			base_dir ./tmp
 			url https://github.com/authp/authp.github.io.git
 			branch gh-pages
-			depth 1
 			post pull exec {
 				name Pager
 				command /usr/local/bin/pager

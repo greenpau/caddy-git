@@ -11,7 +11,6 @@
 			# webhook Github X-Hub-Signature-256 {env.MY_GITHUB_WEBHOOK_KEY}
 			webhook Gitlab X-Gitlab-Token barbaz
 			branch gh-pages
-			depth 1
 		}
 	}
 }

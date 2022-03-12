@@ -12,7 +12,6 @@
 			# auth key ~/.ssh/id_rsa passphrase {env.MY_SSH_KEY_PASSPHRASE} no_strict_host_key_check
 			auth key ~/.ssh/id_rsa
 			branch gh-pages
-			depth 1
 		}
 	}
 }
