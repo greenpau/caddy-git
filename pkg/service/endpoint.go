@@ -16,9 +16,15 @@ package service
 
 import (
 	"context"
+	"crypto/hmac"
+	"crypto/sha256"
+	"encoding/hex"
 	"encoding/json"
+	"fmt"
 	"go.uber.org/zap"
+	"io/ioutil"
 	"net/http"
+	"strings"
 	"sync"
 	"time"
 )
@@ -84,17 +90,50 @@ func (m *Endpoint) ServeHTTP(ctx context.Context, w http.ResponseWriter, r *http
 			if hdr == "" {
 				continue
 			}
-			if hdr != webhook.Secret {
+
+			var authFailed bool
+			var authFailMessage string
+
+			switch webhook.Header {
+			case "X-Hub-Signature-256", strings.ToUpper("X-Hub-Signature-256"):
+				if r.Method != "POST" {
+					authFailed = true
+					authFailMessage = "non-POST request"
+					break
+				}
+				hdrParts := strings.SplitN(hdr, "=", 2)
+				if len(hdrParts) != 2 {
+					authFailed = true
+					authFailMessage = fmt.Sprintf("malformed %s header", webhook.Header)
+					break
+				}
+				if hdrParts[0] != "sha256" {
+					authFailMessage = fmt.Sprintf("malformed %s header, sha256 not found", webhook.Header)
+				}
+				if err := validateSignature(r, strings.TrimSpace(hdrParts[1]), webhook.Secret); err != nil {
+					authFailed = true
+					authFailMessage = fmt.Sprintf("signature validation failed: %v", err)
+				}
+			default:
+				if hdr != webhook.Secret {
+					authFailed = true
+					authFailMessage = "auth header value mismatch"
+				}
+			}
+
+			if authFailed {
 				resp["status_code"] = http.StatusUnauthorized
 				m.logger.Warn(
 					"webhook authentication failed",
 					zap.String("repo_name", repo.Config.Name),
 					zap.String("webhook_header", webhook.Header),
-					zap.String("error", "auth header value mismatch"),
+					zap.String("error", authFailMessage),
 				)
 				return m.respondHTTP(ctx, w, r, resp)
 			}
+
 			authorized = true
+			break
 		}
 
 		if !authorized {
@@ -126,5 +165,26 @@ func (m *Endpoint) respondHTTP(ctx context.Context, w http.ResponseWriter, r *ht
 		w.WriteHeader(http.StatusInternalServerError)
 	}
 	w.Write(b)
+	return nil
+}
+
+func validateSignature(r *http.Request, wantSig, secret string) error {
+	if wantSig == "" {
+		return fmt.Errorf("empty signature")
+	}
+	if len(wantSig) != 64 {
+		return fmt.Errorf("malformed sha256 hash, length %d", len(wantSig))
+	}
+
+	respBody, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		return fmt.Errorf("failed reading request body")
+	}
+	h := hmac.New(sha256.New, []byte(secret))
+	h.Write(respBody)
+	gotSig := hex.EncodeToString(h.Sum(nil))
+	if wantSig != gotSig {
+		return fmt.Errorf("signature mismatch")
+	}
 	return nil
 }
