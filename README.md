@@ -37,6 +37,7 @@ Configuration examples:
 * [Private or public repo over SSH with key-based authentication](./assets/config/ssh/Caddyfile)
 * [Repo with Webhooks](./assets/config/webhook/Caddyfile)
 * [Repo with post pull execution scripts](./assets/config/post_cmd_exec/Caddyfile)
+* [Routeless config](./assets/config/routeless/Caddyfile)
 
 For example, the following configuration sets up a definition for `authp.github.io`
 repo. The request to `authp.myfiosgateway.com/update/authp.github.io` trigger
@@ -49,11 +50,19 @@ repo. The request to `authp.myfiosgateway.com/update/authp.github.io` trigger
       base_dir /tmp
       url https://github.com/authp/authp.github.io.git
       branch gh-pages
+      post pull exec {
+        name Pager
+        command /usr/bin/echo
+        args "pulled authp.github.io repo"
+      }
     }
   }
 }
 
 authp.myfiosgateway.com {
+  route /version* {
+    respond * "1.0.0" 200
+  }
   route /update/authp.github.io {
     git update repo authp.github.io
   }

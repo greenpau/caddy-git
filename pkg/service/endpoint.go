@@ -27,6 +27,7 @@ import (
 type Endpoint struct {
 	mu             sync.Mutex
 	Name           string `json:"-"`
+	Path           string `json:"path,omitempty" xml:"path,omitempty" yaml:"path,omitempty"`
 	RepositoryName string
 	logger         *zap.Logger
 	startedAt      time.Time
@@ -45,6 +46,7 @@ func (m *Endpoint) Provision() error {
 	m.logger.Info(
 		"provisioned plugin instance",
 		zap.String("instance_name", m.Name),
+		zap.String("path", m.Path),
 		zap.Time("started_at", m.startedAt),
 	)
 	return nil

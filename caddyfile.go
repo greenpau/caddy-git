@@ -208,11 +208,25 @@ func parseCaddyfileHandlerConfig(h httpcaddyfile.Helper) (*service.Endpoint, err
 
 	for h.Next() {
 		args := h.RemainingArgs()
+		strArgs := strings.Join(args, " ")
+		if !strings.Contains(strArgs, "update repo ") {
+			return nil, h.Errf("unsupported config: git %s", strArgs)
+		}
 		switch {
-		case strings.HasPrefix(strings.Join(args, " "), "update repo "):
+		case args[0] == "update" && args[1] == "repo":
+			if len(args) != 3 {
+				return nil, h.Errf("malformed config: git %s", strArgs)
+			}
+			endpoint.Path = "*"
 			endpoint.RepositoryName = args[2]
+		case args[1] == "update" && args[2] == "repo":
+			if len(args) != 4 {
+				return nil, h.Errf("malformed config: git %s", strArgs)
+			}
+			endpoint.Path = args[0]
+			endpoint.RepositoryName = args[3]
 		default:
-			return nil, h.Errf("unsupported config: git %s", strings.Join(args, " "))
+			return nil, h.Errf("malformed config: git %s", strArgs)
 		}
 	}
 
@@ -227,7 +241,7 @@ func getRouteFromParseCaddyfileHandlerConfig(h httpcaddyfile.Helper) ([]httpcadd
 		return nil, err
 	}
 	pathMatcher := caddy.ModuleMap{
-		"path": h.JSON(caddyhttp.MatchPath{"*"}),
+		"path": h.JSON(caddyhttp.MatchPath{endpoint.Path}),
 	}
 	route := caddyhttp.Route{
 		HandlersRaw: []json.RawMessage{

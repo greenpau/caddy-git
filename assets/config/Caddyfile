@@ -6,7 +6,7 @@
 
 	git {
 		repo authp.github.io {
-			base_dir ./tmp
+			base_dir {$HOME}/tmp
 			url https://github.com/authp/authp.github.io.git
 			branch gh-pages
 		}
@@ -22,7 +22,7 @@
 	}
 	route {
 		file_server {
-			root ./tmp/authp.github.io
+			root {$HOME}/tmp/authp.github.io
 		}
 	}
 }

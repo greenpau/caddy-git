@@ -6,11 +6,11 @@
 
 	git {
 		repo authp.github.io {
-			base_dir ./tmp/ssh
+			base_dir {$HOME}/tmp/ssh
 			url git@github.com:authp/authp.github.io.git
-			# auth key ~/.ssh/id_rsa passphrase {env.MY_SSH_KEY_PASSPHRASE}
-			# auth key ~/.ssh/id_rsa passphrase {env.MY_SSH_KEY_PASSPHRASE} no_strict_host_key_check
-			auth key ~/.ssh/id_rsa
+			# auth key {$HOME}/.ssh/id_rsa passphrase {env.MY_SSH_KEY_PASSPHRASE}
+			# auth key {$HOME}/.ssh/id_rsa passphrase {env.MY_SSH_KEY_PASSPHRASE} no_strict_host_key_check
+			auth key {$HOME}/.ssh/id_rsa
 			branch gh-pages
 		}
 	}
@@ -25,7 +25,7 @@
 	}
 	route {
 		file_server {
-			root ./tmp/ssh/authp.github.io
+			root {$HOME}/tmp/ssh/authp.github.io
 		}
 	}
 }
