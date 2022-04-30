@@ -39,6 +39,7 @@ type Repository struct {
 	mu          sync.Mutex
 	logger      *zap.Logger
 	lastUpdated time.Time
+	updating    bool
 }
 
 // NewRepository returns an instance of Repository.
@@ -50,8 +51,16 @@ func NewRepository(rc *RepositoryConfig) (*Repository, error) {
 }
 
 func (r *Repository) update() error {
+	if r.updating {
+		return nil
+	}
+
 	r.mu.Lock()
 	defer r.mu.Unlock()
+	r.updating = true
+	defer func() {
+		r.updating = false
+	}()
 
 	err := r.runUpdate()
 	if err != nil {
@@ -279,4 +288,25 @@ func expandDir(s string) string {
 	}
 	output := hd + s[1:]
 	return output
+}
+
+func autoUpdater(r *Repository) {
+	r.logger.Debug(
+		"auto-update enabled",
+		zap.String("repo_name", r.Config.Name),
+		zap.Int("interval", r.Config.UpdateInterval),
+	)
+	intervals := time.NewTicker(time.Second * time.Duration(r.Config.UpdateInterval))
+	defer intervals.Stop()
+	for range intervals.C {
+		if r == nil {
+			break
+		}
+		if err := r.update(); err != nil {
+			r.logger.Error("failed auto-updating repo", zap.String("repo_name", r.Config.Name), zap.Error(err))
+			continue
+		}
+		r.logger.Debug("auto-updated repo", zap.String("repo_name", r.Config.Name))
+	}
+	return
 }

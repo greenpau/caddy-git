@@ -48,6 +48,9 @@ func NewManager(cfg *Config, logger *zap.Logger) (*Manager, error) {
 			return nil, err
 		}
 		m.logger.Debug("registered and synced repo", zap.String("repo_name", rc.Name))
+		if rc.UpdateInterval > 0 {
+			go autoUpdater(r)
+		}
 	}
 	return m, nil
 }

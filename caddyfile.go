@@ -170,7 +170,17 @@ func parseCaddyfileAppConfig(d *caddyfile.Dispenser, _ interface{}) (interface{}
 						return nil, d.Errf("malformed %q directive: %v", k, v)
 					}
 				case "update":
-					return nil, d.Errf("unsupported %q key", k)
+					if len(v) != 2 {
+						return nil, d.Errf("malformed %q directive: %v", k, v)
+					}
+					if v[0] != "every" {
+						return nil, d.Errf("malformed %q directive: %v", k, v)
+					}
+					if n, err := strconv.Atoi(v[1]); err == nil {
+						rc.UpdateInterval = n
+					} else {
+						return nil, d.Errf("%s value %q is not integer", k, v[0])
+					}
 				default:
 					return nil, d.Errf("unsupported %q key", k)
 				}

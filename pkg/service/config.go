@@ -55,13 +55,15 @@ type RepositoryConfig struct {
 	// The address of the Repository.
 	Address string `json:"address,omitempty"`
 	// The directory where the Repository is being stored locally.
-	BaseDir      string           `json:"base_dir,omitempty"`
-	Branch       string           `json:"branch,omitempty"`
-	Depth        int              `json:"depth,omitempty"`
-	Auth         *AuthConfig      `json:"auth,omitempty"`
-	Webhooks     []*WebhookConfig `json:"webhooks,omitempty"`
-	PostPullExec []*ExecConfig    `json:"post_pull_exec,omitempty"`
-	transport    string           `json:"transport,omitempty"`
+	BaseDir string `json:"base_dir,omitempty"`
+	Branch  string `json:"branch,omitempty"`
+	Depth   int    `json:"depth,omitempty"`
+	// The interval at which repository updates automatically.
+	UpdateInterval int              `json:"update_interval,omitempty"`
+	Auth           *AuthConfig      `json:"auth,omitempty"`
+	Webhooks       []*WebhookConfig `json:"webhooks,omitempty"`
+	PostPullExec   []*ExecConfig    `json:"post_pull_exec,omitempty"`
+	transport      string           `json:"transport,omitempty"`
 }
 
 // NewConfig returns an instance of Config.
