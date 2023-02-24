@@ -15,8 +15,9 @@
 package service
 
 import (
-	"go.uber.org/zap"
 	"sync"
+
+	"go.uber.org/zap"
 )
 
 var manager *Manager

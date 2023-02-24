@@ -21,12 +21,13 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	"go.uber.org/zap"
 	"io/ioutil"
 	"net/http"
 	"strings"
 	"sync"
 	"time"
+
+	"go.uber.org/zap"
 )
 
 // Endpoint handles git management requests.
