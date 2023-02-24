@@ -16,11 +16,12 @@ package git
 
 import (
 	"fmt"
-	"github.com/caddyserver/caddy/v2/caddytest"
 	"io/ioutil"
 	"net/http"
 	"testing"
 	"time"
+
+	"github.com/caddyserver/caddy/v2/caddytest"
 )
 
 var (

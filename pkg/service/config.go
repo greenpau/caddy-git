@@ -15,8 +15,9 @@
 package service
 
 import (
-	"github.com/greenpau/caddy-git/pkg/errors"
 	"strings"
+
+	"github.com/greenpau/caddy-git/pkg/errors"
 )
 
 // Config is a configuration of Manager.

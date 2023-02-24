@@ -17,13 +17,6 @@ package service
 import (
 	"bytes"
 	"fmt"
-	"github.com/go-git/go-git/v5"
-	"github.com/go-git/go-git/v5/plumbing"
-	"github.com/go-git/go-git/v5/plumbing/transport"
-	"github.com/go-git/go-git/v5/plumbing/transport/http"
-	"github.com/go-git/go-git/v5/plumbing/transport/ssh"
-	"go.uber.org/zap"
-	cryptossh "golang.org/x/crypto/ssh"
 	"os"
 	"os/exec"
 	"path"
@@ -31,6 +24,14 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/go-git/go-git/v5"
+	"github.com/go-git/go-git/v5/plumbing"
+	"github.com/go-git/go-git/v5/plumbing/transport"
+	"github.com/go-git/go-git/v5/plumbing/transport/http"
+	"github.com/go-git/go-git/v5/plumbing/transport/ssh"
+	"go.uber.org/zap"
+	cryptossh "golang.org/x/crypto/ssh"
 )
 
 // Repository is a configuration for a command or app.
