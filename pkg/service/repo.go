@@ -68,7 +68,7 @@ func (r *Repository) update() error {
 	}
 
 	if len(r.Config.PostPullExec) > 0 {
-		r.runPostPullExec()
+		go r.runPostPullExec()
 	}
 
 	return nil
