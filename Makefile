@@ -7,7 +7,7 @@ LATEST_GIT_COMMIT:=$(shell git log --format="%H" -n 1 | head -1)
 BUILD_USER:=$(shell whoami)
 BUILD_DATE:=$(shell date +"%Y-%m-%d")
 BUILD_DIR:=$(shell pwd)
-CADDY_VERSION="v2.5.0"
+CADDY_VERSION="v2.6.4"
 
 all: info 
 	@mkdir -p bin/
