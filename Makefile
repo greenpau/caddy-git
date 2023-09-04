@@ -7,7 +7,7 @@ LATEST_GIT_COMMIT:=$(shell git log --format="%H" -n 1 | head -1)
 BUILD_USER:=$(shell whoami)
 BUILD_DATE:=$(shell date +"%Y-%m-%d")
 BUILD_DIR:=$(shell pwd)
-CADDY_VERSION="v2.6.4"
+CADDY_VERSION="v2.7.4"
 
 all: info 
 	@mkdir -p bin/
@@ -18,7 +18,7 @@ all: info
 		--with github.com/greenpau/caddy-git@$(LATEST_GIT_COMMIT)=$(BUILD_DIR)
 	@#--with github.com/go-git/go-git/v5@v5.3.0=/home/greenpau/dev/go/src/github.com/go-git/go-git
 	@#bin/caddy run -config assets/config/Caddyfile
-	@for f in `find ./assets -type f -name 'Caddyfile'`; do bin/caddy fmt -overwrite $$f; done
+	@for f in `find ./assets -type f -name 'Caddyfile'`; do bin/caddy fmt --overwrite $$f; done
 
 info:
 	@echo "DEBUG: Version: $(PLUGIN_VERSION), Branch: $(GIT_BRANCH), Revision: $(GIT_COMMIT)"

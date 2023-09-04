@@ -221,7 +221,7 @@ func TestParseCaddyfileAppConfig(t *testing.T) {
               }
             }`),
 			shouldErr: true,
-			err:       fmt.Errorf("%s:%d - Error during parsing: unsupported %q key", tf, 4, "bar"),
+			err:       fmt.Errorf("%s:%d - Error during parsing: unsupported %q key, import chain: ['']", tf, 4, "bar"),
 		},
 		{
 			name: "test parse config with too few arg for repo arg",
@@ -232,7 +232,7 @@ func TestParseCaddyfileAppConfig(t *testing.T) {
               }
             }`),
 			shouldErr: true,
-			err:       fmt.Errorf("%s:%d - Error during parsing: too few args for %q directive (config: 0, min: 1)", tf, 4, "url"),
+			err:       fmt.Errorf("%s:%d - Error during parsing: too few args for %q directive (config: 0, min: 1), import chain: ['']", tf, 4, "url"),
 		},
 	}
 	for _, tc := range testcases {
